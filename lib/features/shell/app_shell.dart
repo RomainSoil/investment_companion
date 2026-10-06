@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../state/navigation_controller.dart';
 import '../home/home_screen.dart';
+import '../calculator/compound_interest_screen.dart';
+import '../saved_simulations/saved_simulations_screen.dart';
 import 'coming_soon_screen.dart';
 import 'profile_tab.dart';
 
@@ -24,13 +26,7 @@ class AppShell extends StatelessWidget {
         index: navigation.current.index,
         children: const [
           HomeScreen(),
-          ComingSoonScreen(
-            icon: Icons.calculate_outlined,
-            title: 'Calculer',
-            message:
-                'Le calculateur d’intérêts composés et la simulation sur ETF '
-                'ou action arrivent à la prochaine étape du développement.',
-          ),
+          CompoundInterestScreen(),
           ComingSoonScreen(
             icon: Icons.menu_book_outlined,
             title: 'Apprendre',
@@ -38,13 +34,7 @@ class AppShell extends StatelessWidget {
                 'Les leçons (ETF ou action, PEA, PEL, compte-titres…) arrivent '
                 'à une prochaine étape du développement.',
           ),
-          ComingSoonScreen(
-            icon: Icons.bookmark_border,
-            title: 'Mes simulations',
-            message:
-                'Vos simulations enregistrées apparaîtront ici, y compris '
-                'hors connexion.',
-          ),
+          SavedSimulationsScreen(),
           ProfileTab(),
         ],
       ),

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:investment_companion/app.dart';
+import 'package:investment_companion/data/app_database.dart';
 import 'package:investment_companion/data/app_preferences.dart';
 import 'package:investment_companion/data/connectivity_service.dart';
 import 'package:investment_companion/data/price_database.dart';
 import 'package:investment_companion/data/price_repository.dart';
 import 'package:investment_companion/data/twelve_data_client.dart';
+import 'package:investment_companion/domain/saved_simulation.dart';
+import 'package:investment_companion/domain/savings_simulation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -17,6 +20,8 @@ Future<void> pumpApp(
   WidgetTester tester, {
   Map<String, Object> stored = const {},
   ConnectivityService? connectivityService,
+  PriceRepository? priceRepository,
+  List<SavedSimulation> simulations = const [],
 }) async {
   // Écran de 390 x 844 points, comme un téléphone courant.
   tester.view.physicalSize = const Size(1170, 2532);
@@ -30,11 +35,14 @@ Future<void> pumpApp(
     InvestmentCompanionApp(
       preferences: AppPreferences(store),
       connectivityService: connectivityService ?? FakeConnectivityService(),
-      // Ni base ni réseau : ces tests n'ouvrent aucun actif.
-      priceRepository: PriceRepository(
-        database: PriceDatabase(path: inMemoryDatabasePath),
-        client: TwelveDataClient(apiKey: ''),
-      ),
+      // Par défaut, ni base ni réseau : la base n'est ouverte qu'au premier
+      // actif affiché, et la clé vide empêche tout appel.
+      priceRepository: priceRepository ??
+          PriceRepository(
+            database: PriceDatabase(AppDatabase(path: inMemoryDatabasePath)),
+            client: TwelveDataClient(apiKey: ''),
+          ),
+      simulationDatabase: FakeSimulationDatabase(simulations),
     ),
   );
   await tester.pumpAndSettle();
@@ -164,7 +172,7 @@ void main() {
       await tester.tap(tile);
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Le calculateur'), findsOneWidget);
+      expect(find.text('Montant initial'), findsOneWidget);
     });
 
     testWidgets('« Simuler un ETF » ouvre la liste des actifs', (tester) async {
@@ -179,6 +187,75 @@ void main() {
       expect(find.text('Choisir un actif'), findsOneWidget);
       expect(find.text('SPDR S&P 500'), findsOneWidget);
     });
+  });
+
+  group('Mes simulations', () {
+    testWidgets('une simulation enregistrée s’affiche, puis se supprime',
+        (tester) async {
+      await pumpApp(tester, stored: alreadyWelcomed);
+
+      await tapTab(tester, 'Simulations');
+      expect(find.textContaining('Aucune simulation'), findsOneWidget);
+
+      await tapTab(tester, 'Calculer');
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Montant initial'),
+        '2500',
+      );
+      // Le bouton est en bas de la liste, construite au fil du défilement.
+      final save = find.text('Enregistrer la simulation');
+      await tester.scrollUntilVisible(
+        save,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(find.text('Simulation enregistrée.'), findsOneWidget);
+
+      await tapTab(tester, 'Simulations');
+      expect(find.text('Intérêts composés'), findsOneWidget);
+      expect(find.textContaining('Aucune simulation'), findsNothing);
+
+      // La carte rouvre le calculateur, prérempli.
+      await tester.tap(find.text('Intérêts composés'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(TextFormField, '2500'), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Supprimer'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Aucune simulation'), findsOneWidget);
+    });
+  });
+
+  testWidgets('une simulation sur un actif rouvre sa fiche, préremplie',
+      (tester) async {
+    await pumpApp(
+      tester,
+      stored: alreadyWelcomed,
+      priceRepository: FakePriceRepository(),
+      simulations: [
+        SavedSimulation(
+          createdAt: DateTime(2026, 10, 6),
+          assetSymbol: 'SPY',
+          assetName: 'SPDR S&P 500',
+          currency: '€',
+          plan: const SavingsPlan(years: 2),
+          invested: 3400,
+          finalValue: 4000,
+        ),
+      ],
+    );
+
+    await tapTab(tester, 'Simulations');
+    await tester.tap(find.textContaining('SPDR S&P 500'));
+    await tester.pumpAndSettle();
+
+    // Fiche de l'actif, déroulée jusqu'à la simulation et ses paramètres.
+    expect(find.widgetWithText(AppBar, 'SPDR S&P 500'), findsOneWidget);
+    expect(find.text('Durée : 2 ans').hitTestable(), findsOneWidget);
   });
 
   group('Barre de navigation', () {

@@ -1,66 +1,17 @@
-import 'package:path/path.dart' as p;
-import 'package:sqflite/sqflite.dart';
-
 import '../domain/price_history.dart';
+import 'app_database.dart';
 
-/// Base SQLite des historiques de cours déjà téléchargés.
-///
-/// C'est la seule classe qui connaît SQLite et le nom des tables. La base est
-/// ouverte au premier accès, pas au démarrage de l'application.
-///
-/// Structure :
-/// - `price_series` : une ligne par actif téléchargé (devise, place de
-///   cotation, date du téléchargement) ;
-/// - `price_points` : une ligne par actif et par jour de cotation.
+/// Historiques de cours déjà téléchargés, dans les tables `price_series` et
+/// `price_points` (voir [AppDatabase]).
 class PriceDatabase {
-  PriceDatabase({String? path}) : _path = path;
+  PriceDatabase(this._appDatabase);
 
-  /// Chemin du fichier. Par défaut, `prices.db` dans le dossier des bases de
-  /// l'application ; les tests passent `inMemoryDatabasePath`.
-  final String? _path;
-
-  late final Future<Database> _database = _open();
-
-  static const int _version = 1;
-
-  Future<Database> _open() async {
-    final path = _path ?? p.join(await getDatabasesPath(), 'prices.db');
-    return openDatabase(
-      path,
-      version: _version,
-      onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
-      onCreate: (db, version) async {
-        await db.execute('''
-          CREATE TABLE price_series (
-            symbol TEXT PRIMARY KEY,
-            currency TEXT NOT NULL,
-            exchange TEXT NOT NULL,
-            fetched_at TEXT NOT NULL
-          )
-        ''');
-        // Les dates sont au format AAAA-MM-JJ : l'ordre alphabétique est
-        // aussi l'ordre chronologique.
-        await db.execute('''
-          CREATE TABLE price_points (
-            symbol TEXT NOT NULL
-              REFERENCES price_series (symbol) ON DELETE CASCADE,
-            date TEXT NOT NULL,
-            open REAL NOT NULL,
-            high REAL NOT NULL,
-            low REAL NOT NULL,
-            close REAL NOT NULL,
-            volume REAL,
-            PRIMARY KEY (symbol, date)
-          ) WITHOUT ROWID
-        ''');
-      },
-    );
-  }
+  final AppDatabase _appDatabase;
 
   /// Historique enregistré de [symbol], ou `null` s'il n'a jamais été
   /// téléchargé.
   Future<PriceHistory?> load(String symbol) async {
-    final db = await _database;
+    final db = await _appDatabase.database;
 
     final series = await db.query(
       'price_series',
@@ -100,7 +51,7 @@ class PriceDatabase {
   /// Enregistre [history], en remplaçant l'éventuel historique précédent du
   /// même actif.
   Future<void> save(PriceHistory history) async {
-    final db = await _database;
+    final db = await _appDatabase.database;
 
     // Transaction : en cas d'échec, la base ne garde pas un historique à
     // moitié écrit.

@@ -72,3 +72,13 @@ const List<Asset> assetCatalog = [
   Asset('BTC/USD', 'Bitcoin', AssetCategory.crypto,
       'Première cryptomonnaie, en dollars'),
 ];
+
+/// Actif du catalogue portant ce [symbol], ou `null` s'il n'y figure plus.
+Asset? assetBySymbol(String symbol) {
+  for (final asset in assetCatalog) {
+    if (asset.symbol == symbol) {
+      return asset;
+    }
+  }
+  return null;
+}

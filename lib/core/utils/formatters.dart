@@ -16,14 +16,21 @@ String formatDate(DateTime date) {
   return '${twoDigits(date.day)}/${twoDigits(date.month)}/${date.year}';
 }
 
-/// Montant avec deux décimales et une virgule, par exemple « 28,47 USD ».
+/// Montant avec deux décimales, une virgule et des espaces entre les
+/// milliers, par exemple « 12 345,67 € ».
 String formatPrice(double value, String currency) {
-  final amount = value.toStringAsFixed(2).replaceAll('.', ',');
-  return currency.isEmpty ? amount : '$amount $currency';
+  final digits = value.abs().toStringAsFixed(2).split('.');
+  // Une espace insécable avant chaque groupe de trois chiffres.
+  final grouped = digits[0].replaceAllMapped(
+    RegExp(r'\B(?=(\d{3})+$)'),
+    (_) => '\u00A0',
+  );
+  final amount = '${value < 0 ? '-' : ''}$grouped,${digits[1]}';
+  return currency.isEmpty ? amount : '$amount\u00A0$currency';
 }
 
 /// Variation en pourcentage, signée, par exemple « +12,3 % » ou « -4,0 % ».
 String formatChange(double ratio) {
   final percent = (ratio * 100).toStringAsFixed(1).replaceAll('.', ',');
-  return '${ratio >= 0 ? '+' : ''}$percent %';
+  return '${ratio >= 0 ? '+' : ''}$percent\u00A0%';
 }

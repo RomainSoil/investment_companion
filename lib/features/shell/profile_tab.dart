@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../domain/investor_profile.dart';
 import '../../state/app_controller.dart';
+import '../settings/settings_screen.dart';
 import 'coming_soon_screen.dart';
 
 /// Onglet « Profil », provisoire tant que le questionnaire n'est pas développé.
@@ -21,9 +22,20 @@ class ProfileTab extends StatelessWidget {
       message:
           'Le questionnaire de profil investisseur arrive à la prochaine étape '
           'du développement.',
-      action: TextButton(
-        onPressed: () => context.read<AppController>().showWelcomeAgain(),
-        child: const Text('Revoir l’écran de bienvenue'),
+      action: Column(
+        children: [
+          TextButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
+            ),
+            icon: const Icon(Icons.settings_outlined),
+            label: const Text('Paramètres'),
+          ),
+          TextButton(
+            onPressed: () => context.read<AppController>().showWelcomeAgain(),
+            child: const Text('Revoir l’écran de bienvenue'),
+          ),
+        ],
       ),
     );
   }

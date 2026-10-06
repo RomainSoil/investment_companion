@@ -33,15 +33,20 @@ void main() {
 
   group('formatPrice', () {
     test('affiche deux décimales avec une virgule et la devise', () {
-      expect(formatPrice(28.4725, 'USD'), '28,47 USD');
+      expect(formatPrice(28.4725, 'USD'), '28,47\u00A0USD');
       expect(formatPrice(3, ''), '3,00');
+    });
+
+    test('sépare les milliers et garde le signe', () {
+      expect(formatPrice(1234567.891, '€'), '1\u00A0234\u00A0567,89\u00A0€');
+      expect(formatPrice(-1500, '€'), '-1\u00A0500,00\u00A0€');
     });
   });
 
   group('formatChange', () {
     test('affiche une variation signée en pourcentage', () {
-      expect(formatChange(0.123), '+12,3 %');
-      expect(formatChange(-0.04), '-4,0 %');
+      expect(formatChange(0.123), '+12,3\u00A0%');
+      expect(formatChange(-0.04), '-4,0\u00A0%');
     });
   });
 }

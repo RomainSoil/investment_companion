@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:investment_companion/data/app_database.dart';
 import 'package:investment_companion/data/price_database.dart';
 import 'package:investment_companion/data/price_repository.dart';
 import 'package:investment_companion/data/twelve_data_client.dart';
@@ -74,7 +75,7 @@ void main() {
   setUp(() async {
     // Une base neuve par test.
     await databaseFactory.deleteDatabase(inMemoryDatabasePath);
-    database = PriceDatabase(path: inMemoryDatabasePath);
+    database = PriceDatabase(AppDatabase(path: inMemoryDatabasePath));
     requests = [];
   });
 
