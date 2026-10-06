@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../state/navigation_controller.dart';
-import '../home/home_screen.dart';
 import '../calculator/compound_interest_screen.dart';
+import '../home/home_screen.dart';
+import '../learn/learn_screen.dart';
 import '../saved_simulations/saved_simulations_screen.dart';
-import 'coming_soon_screen.dart';
 import 'profile_tab.dart';
 
 /// Structure de l'application une fois l'écran de bienvenue passé : un écran
@@ -27,13 +27,7 @@ class AppShell extends StatelessWidget {
         children: const [
           HomeScreen(),
           CompoundInterestScreen(),
-          ComingSoonScreen(
-            icon: Icons.menu_book_outlined,
-            title: 'Apprendre',
-            message:
-                'Les leçons (ETF ou action, PEA, PEL, compte-titres…) arrivent '
-                'à une prochaine étape du développement.',
-          ),
+          LearnScreen(),
           SavedSimulationsScreen(),
           ProfileTab(),
         ],

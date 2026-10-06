@@ -16,6 +16,8 @@ class AppPreferences {
   static const String profileTypeKey = 'profile_type';
   static const String displayCurrencyKey = 'display_currency';
   static const String usdToEurKey = 'usd_to_eur';
+  static const String lessonsStartedKey = 'lessons_started';
+  static const String lessonsDoneKey = 'lessons_done';
 
   /// Vrai dès que l'utilisateur a quitté l'écran de bienvenue.
   bool get welcomeSeen => _store.getBool(welcomeSeenKey) ?? false;
@@ -35,6 +37,24 @@ class AppPreferences {
     } else {
       await _store.setString(profileTypeKey, type.name);
     }
+  }
+
+  /// Identifiants des leçons ouvertes au moins une fois.
+  Set<String> get lessonsStarted {
+    return (_store.getStringList(lessonsStartedKey) ?? const []).toSet();
+  }
+
+  Future<void> setLessonsStarted(Set<String> ids) async {
+    await _store.setStringList(lessonsStartedKey, ids.toList()..sort());
+  }
+
+  /// Identifiants des leçons terminées.
+  Set<String> get lessonsDone {
+    return (_store.getStringList(lessonsDoneKey) ?? const []).toSet();
+  }
+
+  Future<void> setLessonsDone(Set<String> ids) async {
+    await _store.setStringList(lessonsDoneKey, ids.toList()..sort());
   }
 
   /// Devise d'affichage et taux de change, ou les valeurs par défaut s'ils
