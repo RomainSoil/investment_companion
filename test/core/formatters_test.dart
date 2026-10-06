@@ -24,4 +24,24 @@ void main() {
       expect(formatTime(DateTime(2026, 10, 5)), '00:00');
     });
   });
+
+  group('formatDate', () {
+    test('affiche jour, mois et année', () {
+      expect(formatDate(DateTime(2016, 10, 6)), '06/10/2016');
+    });
+  });
+
+  group('formatPrice', () {
+    test('affiche deux décimales avec une virgule et la devise', () {
+      expect(formatPrice(28.4725, 'USD'), '28,47 USD');
+      expect(formatPrice(3, ''), '3,00');
+    });
+  });
+
+  group('formatChange', () {
+    test('affiche une variation signée en pourcentage', () {
+      expect(formatChange(0.123), '+12,3 %');
+      expect(formatChange(-0.04), '-4,0 %');
+    });
+  });
 }

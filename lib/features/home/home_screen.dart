@@ -10,6 +10,7 @@ import '../../domain/investor_profile.dart';
 import '../../state/app_controller.dart';
 import '../../state/connectivity_controller.dart';
 import '../../state/navigation_controller.dart';
+import '../assets/asset_list_screen.dart';
 import 'widgets/connection_status_line.dart';
 import 'widgets/feature_tile.dart';
 import 'widgets/offline_banner.dart';
@@ -116,7 +117,11 @@ class HomeScreen extends StatelessWidget {
                         icon: Icons.wifi,
                         tone: BadgeTone.info,
                       ),
-                      onTap: () => _open(context, AppTab.calculator),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const AssetListScreen(),
+                        ),
+                      ),
                     ),
                   ),
                 ],

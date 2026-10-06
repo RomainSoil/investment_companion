@@ -26,6 +26,7 @@ lisant un cours.
 | Écran de bienvenue au premier lancement, sans compte | Fait |
 | Accueil : profil, état de la connexion, conseil du jour, accès rapides | Fait |
 | Navigation à cinq onglets | Fait |
+| Historique des cours sur 10 ans de 25 actifs, gardé sur le téléphone | Fait |
 | Questionnaire de profil investisseur et score expliqué | À venir |
 | Calculateur d'intérêts composés (hors connexion) | À venir |
 | Simulation « Et si j'avais investi… ? » sur un ETF ou une action | À venir |
@@ -40,8 +41,20 @@ Prérequis : Flutter avec Dart 3.5 ou plus récent.
 git clone <adresse-du-dépôt>
 cd investment_companion
 flutter pub get
-flutter run
+cp env.example.json env.json   # puis y mettre sa clé Twelve Data
+flutter run --dart-define-from-file=env.json
 ```
+
+Les cours viennent de l'API [Twelve Data](https://twelvedata.com) (offre
+gratuite : 8 appels par minute, 800 par jour, places américaines
+uniquement). La clé se place dans `env.json`, ignoré par git. Sous Android
+Studio, ajouter `--dart-define-from-file=env.json` dans *Additional run args*
+de la configuration de lancement.
+
+Un historique n'est téléchargé qu'à la première ouverture de l'actif, puis
+relu depuis la base SQLite du téléphone (`lib/data/price_database.dart`).
+Sous Windows, la compilation avec des plugins demande d'activer le mode
+développeur (`start ms-settings:developers`).
 
 Vérifications :
 

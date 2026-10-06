@@ -12,10 +12,21 @@ dependencies:
   # Textes Material en français (infobulles, lecteurs d'écran…).
   flutter_localizations:
     sdk: flutter
+  # Appels à l'API de cours Twelve Data.
+  http: ^1.6.0
+  # Construction du chemin du fichier de la base.
+  path: ^1.9.1
   # Gestion d'état : ChangeNotifier + Provider.
   provider: ^6.1.2
   # Petites données de l'utilisateur conservées sur le téléphone.
   shared_preferences: ^2.2.0
+  # Base SQLite : historiques de cours déjà téléchargés.
+  sqflite: ^2.4.4+1
+  # SQLite sur Windows et Linux, que sqflite ne gère pas seul.
+  sqflite_common_ffi: ^2.4.3
+  # SQLite dans le navigateur (fichiers web/sqlite3.wasm et web/sqflite_sw.js,
+  # installés par `dart run sqflite_common_ffi_web:setup`).
+  sqflite_common_ffi_web: ^1.2.0
 
 dev_dependencies:
   flutter_test:
