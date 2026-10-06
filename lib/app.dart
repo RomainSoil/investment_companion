@@ -11,6 +11,7 @@ import 'features/shell/app_shell.dart';
 import 'features/welcome/welcome_screen.dart';
 import 'state/app_controller.dart';
 import 'state/connectivity_controller.dart';
+import 'state/lessons_controller.dart';
 import 'state/navigation_controller.dart';
 import 'state/settings_controller.dart';
 import 'state/simulations_controller.dart';
@@ -53,6 +54,9 @@ class InvestmentCompanionApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<SimulationsController>(
           create: (_) => SimulationsController(simulationDatabase)..load(),
+        ),
+        ChangeNotifierProvider<LessonsController>(
+          create: (_) => LessonsController(preferences),
         ),
         ChangeNotifierProvider<ConnectivityController>(
           // Créé tout de suite pour lancer la première vérification dès le

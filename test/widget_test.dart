@@ -59,6 +59,15 @@ Future<void> tapTab(WidgetTester tester, String label) async {
   await tester.pumpAndSettle();
 }
 
+/// Ouvre une leçon depuis la liste de l'onglet « Apprendre ».
+Future<void> openLesson(WidgetTester tester, String title) async {
+  final tile = find.text(title);
+  await tester.ensureVisible(tile);
+  await tester.pumpAndSettle();
+  await tester.tap(tile);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   const alreadyWelcomed = <String, Object>{AppPreferences.welcomeSeenKey: true};
 
@@ -264,8 +273,87 @@ void main() {
 
       await tapTab(tester, 'Apprendre');
 
-      expect(find.textContaining('Les leçons'), findsOneWidget);
+      expect(find.text('Votre parcours'), findsOneWidget);
       expect(find.text('Intérêts composés'), findsNothing);
+    });
+  });
+
+  group('Leçons', () {
+    testWidgets('la liste affiche les leçons et la progression',
+        (tester) async {
+      await pumpApp(tester, stored: alreadyWelcomed);
+
+      await tapTab(tester, 'Apprendre');
+
+      expect(find.text('0 / 7 leçons'), findsOneWidget);
+      expect(find.text('Les intérêts composés'), findsOneWidget);
+    });
+
+    testWidgets('ouvrir une leçon la passe en cours', (tester) async {
+      await pumpApp(tester, stored: alreadyWelcomed);
+      await tapTab(tester, 'Apprendre');
+
+      await openLesson(tester, 'Les intérêts composés');
+      expect(find.text('Leçon'), findsOneWidget);
+
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+
+      expect(find.text('En cours'), findsOneWidget);
+    });
+
+    testWidgets('répondre au quiz affiche l’explication', (tester) async {
+      await pumpApp(tester, stored: alreadyWelcomed);
+      await tapTab(tester, 'Apprendre');
+
+      await openLesson(tester, 'Les intérêts composés');
+
+      final answer = find.text('La durée du placement');
+      await tester.scrollUntilVisible(
+        answer,
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(answer);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bonne réponse.'), findsOneWidget);
+    });
+
+    testWidgets('terminer une leçon met à jour la progression',
+        (tester) async {
+      await pumpApp(tester, stored: alreadyWelcomed);
+      await tapTab(tester, 'Apprendre');
+
+      await openLesson(tester, 'Les intérêts composés');
+
+      final finish = find.textContaining('terminé la leçon');
+      await tester.scrollUntilVisible(
+        finish,
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(finish);
+      await tester.pumpAndSettle();
+
+      expect(find.text('1 / 7 leçons'), findsOneWidget);
+
+      final store = await SharedPreferences.getInstance();
+      expect(
+        store.getStringList(AppPreferences.lessonsDoneKey),
+        ['interets-composes'],
+      );
+    });
+
+    testWidgets('le filtre n’affiche que le thème choisi', (tester) async {
+      await pumpApp(tester, stored: alreadyWelcomed);
+      await tapTab(tester, 'Apprendre');
+
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Enveloppes'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('PEA, PEL, compte-titres'), findsOneWidget);
+      expect(find.text('Les intérêts composés'), findsNothing);
     });
   });
 }

@@ -9,6 +9,7 @@ import '../../domain/daily_tip.dart';
 import '../../domain/investor_profile.dart';
 import '../../state/app_controller.dart';
 import '../../state/connectivity_controller.dart';
+import '../../state/lessons_controller.dart';
 import '../../state/navigation_controller.dart';
 import '../assets/asset_list_screen.dart';
 import 'widgets/connection_status_line.dart';
@@ -39,6 +40,14 @@ class HomeScreen extends StatelessWidget {
     );
     // `watch` : l'accueil se reconstruit à chaque changement de connexion.
     final connectivity = context.watch<ConnectivityController>();
+
+    // Progression des leçons, affichée sur la tuile « Apprendre ».
+    final lessonsDone = context.select<LessonsController, int>(
+      (lessons) => lessons.doneCount,
+    );
+    final lessonsTotal = context.select<LessonsController, int>(
+      (lessons) => lessons.totalCount,
+    );
 
     final now = DateTime.now();
     final tip = tipOfTheDay(date: now, profile: profile);
@@ -137,8 +146,8 @@ class HomeScreen extends StatelessWidget {
                       icon: Icons.menu_book_outlined,
                       title: 'Apprendre',
                       subtitle: 'ETF, actions, PEA, PEL…',
-                      badge: const StatusBadge(
-                        label: 'Hors ligne',
+                      badge: StatusBadge(
+                        label: '$lessonsDone / $lessonsTotal leçons',
                         icon: Icons.check,
                         tone: BadgeTone.positive,
                       ),

@@ -25,6 +25,7 @@ class AppColors {
   static const Color info = Color(0xFF2F4F86);
   static const Color infoSoft = Color(0xFFE4EAF5);
   static const Color danger = Color(0xFFA3312B);
+  static const Color dangerSoft = Color(0xFFF8E3E1);
   static const Color neutralSoft = Color(0xFFECE9E1);
 
   // Graphiques
