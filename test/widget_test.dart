@@ -3,7 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:investment_companion/app.dart';
 import 'package:investment_companion/data/app_preferences.dart';
 import 'package:investment_companion/data/connectivity_service.dart';
+import 'package:investment_companion/data/price_database.dart';
+import 'package:investment_companion/data/price_repository.dart';
+import 'package:investment_companion/data/twelve_data_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'helpers/fakes.dart';
 
@@ -26,6 +30,11 @@ Future<void> pumpApp(
     InvestmentCompanionApp(
       preferences: AppPreferences(store),
       connectivityService: connectivityService ?? FakeConnectivityService(),
+      // Ni base ni réseau : ces tests n'ouvrent aucun actif.
+      priceRepository: PriceRepository(
+        database: PriceDatabase(path: inMemoryDatabasePath),
+        client: TwelveDataClient(apiKey: ''),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -68,8 +77,7 @@ void main() {
       expect(store.getBool(AppPreferences.welcomeSeenKey), isTrue);
     });
 
-    testWidgets('« Définir mon profil » ouvre l’onglet Profil',
-        (tester) async {
+    testWidgets('« Définir mon profil » ouvre l’onglet Profil', (tester) async {
       await pumpApp(tester);
 
       await tester.tap(find.text('Définir mon profil'));
@@ -157,6 +165,19 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Le calculateur'), findsOneWidget);
+    });
+
+    testWidgets('« Simuler un ETF » ouvre la liste des actifs', (tester) async {
+      await pumpApp(tester, stored: alreadyWelcomed);
+
+      final tile = find.text('Simuler un ETF ou une action');
+      await tester.ensureVisible(tile);
+      await tester.pumpAndSettle();
+      await tester.tap(tile);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Choisir un actif'), findsOneWidget);
+      expect(find.text('SPDR S&P 500'), findsOneWidget);
     });
   });
 

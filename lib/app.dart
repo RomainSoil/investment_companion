@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'data/app_preferences.dart';
 import 'data/connectivity_service.dart';
+import 'data/price_repository.dart';
 import 'features/shell/app_shell.dart';
 import 'features/welcome/welcome_screen.dart';
 import 'state/app_controller.dart';
@@ -24,15 +25,18 @@ class InvestmentCompanionApp extends StatelessWidget {
     super.key,
     required this.preferences,
     required this.connectivityService,
+    required this.priceRepository,
   });
 
   final AppPreferences preferences;
   final ConnectivityService connectivityService;
+  final PriceRepository priceRepository;
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<PriceRepository>.value(value: priceRepository),
         ChangeNotifierProvider<AppController>(
           create: (_) => AppController(preferences),
         ),
