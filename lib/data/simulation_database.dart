@@ -1,3 +1,5 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../domain/saved_simulation.dart';
 import '../domain/savings_simulation.dart';
 import 'app_database.dart';
@@ -38,21 +40,29 @@ class SimulationDatabase {
     ];
   }
 
-  Future<void> insert(SavedSimulation simulation) async {
+  /// Ajoute [simulation], ou remplace celle qui a le même identifiant si elle
+  /// est déjà enregistrée.
+  Future<void> save(SavedSimulation simulation) async {
     final db = await _appDatabase.database;
-    await db.insert(_table, {
-      'created_at': simulation.createdAt.toIso8601String(),
-      'asset_symbol': simulation.assetSymbol,
-      'asset_name': simulation.assetName,
-      'currency': simulation.currency,
-      'initial_amount': simulation.plan.initialAmount,
-      'contribution': simulation.plan.contribution,
-      'frequency': simulation.plan.frequency.name,
-      'years': simulation.plan.years,
-      'annual_rate': simulation.plan.annualRate,
-      'invested': simulation.invested,
-      'final_value': simulation.finalValue,
-    });
+    await db.insert(
+      _table,
+      {
+        // `null` pour une nouvelle simulation : SQLite choisit l'identifiant.
+        'id': simulation.id,
+        'created_at': simulation.createdAt.toIso8601String(),
+        'asset_symbol': simulation.assetSymbol,
+        'asset_name': simulation.assetName,
+        'currency': simulation.currency,
+        'initial_amount': simulation.plan.initialAmount,
+        'contribution': simulation.plan.contribution,
+        'frequency': simulation.plan.frequency.name,
+        'years': simulation.plan.years,
+        'annual_rate': simulation.plan.annualRate,
+        'invested': simulation.invested,
+        'final_value': simulation.finalValue,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> delete(int id) async {

@@ -8,6 +8,7 @@ import 'package:investment_companion/data/price_database.dart';
 import 'package:investment_companion/data/price_repository.dart';
 import 'package:investment_companion/data/twelve_data_client.dart';
 import 'package:investment_companion/domain/saved_simulation.dart';
+import 'package:investment_companion/features/calculator/compound_interest_screen.dart';
 import 'package:investment_companion/domain/savings_simulation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -226,17 +227,80 @@ void main() {
       expect(find.text('Intérêts composés'), findsOneWidget);
       expect(find.textContaining('Aucune simulation'), findsNothing);
 
-      // La carte rouvre le calculateur, prérempli.
+      // La carte rouvre le calculateur, prérempli ; le bouton met à jour la
+      // simulation au lieu d'en enregistrer une seconde.
       await tester.tap(find.text('Intérêts composés'));
       await tester.pumpAndSettle();
       expect(find.widgetWithText(TextFormField, '2500'), findsOneWidget);
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, '2500'),
+        '4000',
+      );
+      final update = find.text('Mettre à jour la simulation');
+      await tester.scrollUntilVisible(
+        update,
+        300,
+        scrollable: find
+            .descendant(
+              of: find.byType(CompoundInterestScreen),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.tap(update);
+      await tester.pumpAndSettle();
+      expect(find.text('Simulation mise à jour.'), findsOneWidget);
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
+
+      expect(find.text('Intérêts composés'), findsOneWidget);
+      expect(find.textContaining('4\u00A0000,00'), findsOneWidget);
 
       await tester.tap(find.byTooltip('Supprimer'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Aucune simulation'), findsOneWidget);
     });
+  });
+
+  testWidgets('le questionnaire attribue un profil et conseille des actifs',
+      (tester) async {
+    await pumpApp(tester, stored: alreadyWelcomed);
+
+    await tapTab(tester, 'Profil');
+    expect(find.text('Votre profil'), findsOneWidget);
+    await tester.tap(find.text('Commencer le questionnaire'));
+    await tester.pumpAndSettle();
+
+    // Réponses les plus prudentes : 0 point chacune.
+    for (final answer in [
+      'Dans moins de 3 ans',
+      'Protéger mon épargne',
+      'Je vends tout pour limiter la perte',
+      'Jamais',
+      'Non',
+    ]) {
+      await tester.scrollUntilVisible(
+        find.text(answer),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(find.text(answer));
+      await tester.pump();
+    }
+    final submit = find.text('Voir mon profil');
+    await tester.scrollUntilVisible(
+      submit,
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(submit);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Profil Prudent'), findsOneWidget);
+    expect(find.text('Score 0 / 10 : profil prudent.'), findsOneWidget);
+    // L'obligataire AGG fait partie des actifs à risque faible.
+    expect(find.text('iShares Core US Aggregate Bond'), findsOneWidget);
   });
 
   testWidgets('une simulation sur un actif rouvre sa fiche, préremplie',
@@ -320,8 +384,7 @@ void main() {
       expect(find.text('Bonne réponse.'), findsOneWidget);
     });
 
-    testWidgets('terminer une leçon met à jour la progression',
-        (tester) async {
+    testWidgets('terminer une leçon met à jour la progression', (tester) async {
       await pumpApp(tester, stored: alreadyWelcomed);
       await tapTab(tester, 'Apprendre');
 

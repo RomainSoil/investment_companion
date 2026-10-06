@@ -8,6 +8,7 @@ import '../../data/price_repository.dart';
 import '../../domain/asset.dart';
 import '../../domain/currency.dart';
 import '../../domain/price_history.dart';
+import '../../domain/saved_simulation.dart';
 import '../../domain/savings_simulation.dart';
 import '../../state/settings_controller.dart';
 import 'price_chart.dart';
@@ -19,13 +20,17 @@ import 'what_if_section.dart';
 /// L'historique vient de la base s'il a déjà été téléchargé, sinon de l'API
 /// (voir [PriceRepository]).
 ///
-/// Avec [initialPlan] (simulation enregistrée rouverte), la simulation est
-/// préremplie et l'écran défile jusqu'à elle.
+/// Avec [savedSimulation] (simulation enregistrée rouverte), la simulation est
+/// préremplie, l'écran défile jusqu'à elle et le bouton la met à jour.
 class AssetDetailScreen extends StatefulWidget {
-  const AssetDetailScreen({super.key, required this.asset, this.initialPlan});
+  const AssetDetailScreen({
+    super.key,
+    required this.asset,
+    this.savedSimulation,
+  });
 
   final Asset asset;
-  final SavingsPlan? initialPlan;
+  final SavedSimulation? savedSimulation;
 
   @override
   State<AssetDetailScreen> createState() => _AssetDetailScreenState();
@@ -33,11 +38,11 @@ class AssetDetailScreen extends StatefulWidget {
 
 class _AssetDetailScreenState extends State<AssetDetailScreen> {
   late Future<PriceHistory> _history;
-  late SavingsPlan _plan = widget.initialPlan ?? const SavingsPlan();
+  late SavingsPlan _plan = widget.savedSimulation?.plan ?? const SavingsPlan();
 
   /// Repère la simulation, pour faire défiler l'écran jusqu'à elle.
   final _whatIfKey = GlobalKey();
-  late bool _scrollToWhatIf = widget.initialPlan != null;
+  late bool _scrollToWhatIf = widget.savedSimulation != null;
 
   // Chargement lancé une seule fois, et non dans `build` : une reconstruction
   // de l'écran ne relance pas l'appel.
@@ -49,6 +54,24 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
 
   Future<PriceHistory> _load() {
     return context.read<PriceRepository>().dailyHistory(widget.asset.symbol);
+  }
+
+  /// Fait défiler l'écran jusqu'à la simulation, une seule fois, après
+  /// l'affichage de l'historique.
+  void _scrollToWhatIfOnce() {
+    if (!_scrollToWhatIf) {
+      return;
+    }
+    _scrollToWhatIf = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final target = _whatIfKey.currentContext;
+      if (target != null) {
+        Scrollable.ensureVisible(
+          target,
+          duration: const Duration(milliseconds: 400),
+        );
+      }
+    });
   }
 
   @override
@@ -68,25 +91,31 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
           if (history == null) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (_scrollToWhatIf) {
-            // Une seule fois, une fois l'historique affiché.
-            _scrollToWhatIf = false;
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              final target = _whatIfKey.currentContext;
-              if (target != null) {
-                Scrollable.ensureVisible(
-                  target,
-                  duration: const Duration(milliseconds: 400),
-                );
-              }
-            });
+          if (history.points.isEmpty) {
+            return const Center(child: Text('Aucun cours disponible.'));
           }
-          return _HistoryView(
-            asset: widget.asset,
-            history: history,
-            whatIfKey: _whatIfKey,
-            plan: _plan,
-            onPlanChanged: (plan) => setState(() => _plan = plan),
+
+          _scrollToWhatIfOnce();
+          // Pas de ListView : son contenu n'est construit qu'à l'approche de
+          // l'écran, et la simulation doit exister pour qu'on défile jusqu'à
+          // elle.
+          return SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _HistorySummary(asset: widget.asset, history: history),
+                const Divider(height: 48),
+                WhatIfSection(
+                  key: _whatIfKey,
+                  assetName: widget.asset.name,
+                  history: history,
+                  plan: _plan,
+                  onPlanChanged: (plan) => setState(() => _plan = plan),
+                  savedSimulationId: widget.savedSimulation?.id,
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -94,28 +123,16 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
   }
 }
 
-class _HistoryView extends StatelessWidget {
-  const _HistoryView({
-    required this.asset,
-    required this.history,
-    required this.whatIfKey,
-    required this.plan,
-    required this.onPlanChanged,
-  });
+/// Cours actuel, évolution sur la période, risque et graphique des cours.
+class _HistorySummary extends StatelessWidget {
+  const _HistorySummary({required this.asset, required this.history});
 
   final Asset asset;
   final PriceHistory history;
-  final GlobalKey whatIfKey;
-  final SavingsPlan plan;
-  final ValueChanged<SavingsPlan> onPlanChanged;
 
   @override
   Widget build(BuildContext context) {
     final points = history.points;
-    if (points.isEmpty) {
-      return const Center(child: Text('Aucun cours disponible.'));
-    }
-
     final first = points.first;
     final last = points.last;
     final change = last.close / first.close - 1;
@@ -134,58 +151,51 @@ class _HistoryView extends StatelessWidget {
             );
     }
 
-    // Pas de ListView : son contenu n'est construit qu'à l'approche de
-    // l'écran, et la simulation doit exister pour que l'on défile jusqu'à elle.
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            '${asset.symbol} · ${history.exchange}',
-            style: AppTextStyles.caption,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          '${asset.symbol} · ${history.exchange}',
+          style: AppTextStyles.caption,
+        ),
+        const SizedBox(height: 4),
+        Text(price(last.close), style: AppTextStyles.title),
+        Text(
+          '${formatChange(change)} depuis le ${formatDate(first.date)}',
+          style: AppTextStyles.label.copyWith(
+            color: change >= 0 ? AppColors.primary : AppColors.danger,
           ),
-          const SizedBox(height: 4),
-          Text(
-            price(last.close),
-            style: AppTextStyles.title,
-          ),
-          Text(
-            '${formatChange(change)} depuis le ${formatDate(first.date)}',
-            style: AppTextStyles.label.copyWith(
-              color: change >= 0 ? AppColors.primary : AppColors.danger,
-            ),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(height: 200, child: PriceChart(points: points)),
-          const SizedBox(height: 20),
-          _InfoRow('Premier cours', price(first.close)),
-          _InfoRow('Dernier cours', price(last.close)),
-          _InfoRow('Période',
-              '${formatDate(first.date)} – ${formatDate(last.date)}'),
-          _InfoRow('Séances', '${points.length}'),
-          const SizedBox(height: 16),
-          Text(
-            [
-              'Données Twelve Data, enregistrées sur le téléphone le '
-                  '${formatDate(history.fetchedAt)}.',
-              if (isConverted)
-                'Cours convertis au taux fixe de 1\u00A0\$ = '
-                    '${formatPrice(settings.usdToEur, '€')}, modifiable dans les '
-                    'paramètres.',
-            ].join(' '),
-            style: AppTextStyles.caption,
-          ),
-          const Divider(height: 48),
-          WhatIfSection(
-            key: whatIfKey,
-            assetName: asset.name,
-            history: history,
-            plan: plan,
-            onPlanChanged: onPlanChanged,
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 20),
+        SizedBox(height: 200, child: PriceChart(points: points)),
+        const SizedBox(height: 20),
+        _InfoRow('Niveau de risque', asset.risk.label),
+        _InfoRow(
+          'Volatilité annuelle',
+          formatPercent(history.annualVolatility),
+        ),
+        _InfoRow('Premier cours', price(first.close)),
+        _InfoRow('Dernier cours', price(last.close)),
+        _InfoRow(
+          'Période',
+          '${formatDate(first.date)} – ${formatDate(last.date)}',
+        ),
+        const SizedBox(height: 16),
+        Text(
+          [
+            'La volatilité mesure l’ampleur habituelle des variations du '
+                'cours sur un an : plus elle est forte, plus le risque est '
+                'élevé.',
+            'Données Twelve Data, enregistrées sur le téléphone le '
+                '${formatDate(history.fetchedAt)}.',
+            if (isConverted)
+              'Cours convertis au taux fixe de 1\u00A0\$ = '
+                  '${formatPrice(settings.usdToEur, '€')}, modifiable dans '
+                  'les paramètres.',
+          ].join(' '),
+          style: AppTextStyles.caption,
+        ),
+      ],
     );
   }
 }

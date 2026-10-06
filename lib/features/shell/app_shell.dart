@@ -5,9 +5,9 @@ import '../../core/theme/app_colors.dart';
 import '../../state/navigation_controller.dart';
 import '../calculator/compound_interest_screen.dart';
 import '../home/home_screen.dart';
+import '../profile/profile_screen.dart';
 import '../learn/learn_screen.dart';
 import '../saved_simulations/saved_simulations_screen.dart';
-import 'profile_tab.dart';
 
 /// Structure de l'application une fois l'écran de bienvenue passé : un écran
 /// par onglet et la barre de navigation en bas.
@@ -29,7 +29,7 @@ class AppShell extends StatelessWidget {
           CompoundInterestScreen(),
           LearnScreen(),
           SavedSimulationsScreen(),
-          ProfileTab(),
+          ProfileScreen(),
         ],
       ),
       bottomNavigationBar: DecoratedBox(

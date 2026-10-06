@@ -54,13 +54,13 @@ class _SimulationCard extends StatelessWidget {
     if (symbol == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: CompoundInterestScreen(initialPlan: simulation.plan),
+        body: CompoundInterestScreen(savedSimulation: simulation),
       );
     }
     final asset = assetBySymbol(symbol);
     return asset == null
         ? null
-        : AssetDetailScreen(asset: asset, initialPlan: simulation.plan);
+        : AssetDetailScreen(asset: asset, savedSimulation: simulation);
   }
 
   @override

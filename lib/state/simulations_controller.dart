@@ -21,10 +21,10 @@ class SimulationsController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Enregistre [simulation], puis relit la liste pour obtenir son
-  /// identifiant en base.
+  /// Enregistre une nouvelle simulation, ou met à jour [simulation] si elle a
+  /// déjà un identifiant. La liste est ensuite relue depuis la base.
   Future<void> save(SavedSimulation simulation) async {
-    await _database.insert(simulation);
+    await _database.save(simulation);
     await load();
   }
 

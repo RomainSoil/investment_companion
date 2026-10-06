@@ -49,7 +49,7 @@ class FailingConnectivityService implements ConnectivityService {
 /// termineraient pas.
 class FakeSimulationDatabase implements SimulationDatabase {
   FakeSimulationDatabase([List<SavedSimulation> simulations = const []]) {
-    simulations.forEach(insert);
+    simulations.forEach(save);
   }
 
   final List<SavedSimulation> _simulations = [];
@@ -61,7 +61,13 @@ class FakeSimulationDatabase implements SimulationDatabase {
   }
 
   @override
-  Future<void> insert(SavedSimulation simulation) async {
+  Future<void> save(SavedSimulation simulation) async {
+    final id = simulation.id;
+    if (id != null) {
+      final index = _simulations.indexWhere((other) => other.id == id);
+      _simulations[index] = simulation;
+      return;
+    }
     _simulations.add(
       SavedSimulation(
         id: _nextId++,

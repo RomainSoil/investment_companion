@@ -13,22 +13,20 @@ import 'widgets/savings_result.dart';
 /// Calculateur d'intérêts composés : projection d'un placement régulier à
 /// rendement annuel constant. Fonctionne hors connexion.
 ///
-/// [initialPlan] préremplit le formulaire, par exemple pour rouvrir une
-/// simulation enregistrée.
+/// Avec [savedSimulation] (simulation enregistrée rouverte), le formulaire
+/// est prérempli et le bouton met à jour la simulation au lieu d'en
+/// enregistrer une nouvelle.
 class CompoundInterestScreen extends StatefulWidget {
-  const CompoundInterestScreen({
-    super.key,
-    this.initialPlan = const SavingsPlan(),
-  });
+  const CompoundInterestScreen({super.key, this.savedSimulation});
 
-  final SavingsPlan initialPlan;
+  final SavedSimulation? savedSimulation;
 
   @override
   State<CompoundInterestScreen> createState() => _CompoundInterestScreenState();
 }
 
 class _CompoundInterestScreenState extends State<CompoundInterestScreen> {
-  late SavingsPlan _plan = widget.initialPlan;
+  late SavingsPlan _plan = widget.savedSimulation?.plan ?? const SavingsPlan();
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +58,7 @@ class _CompoundInterestScreenState extends State<CompoundInterestScreen> {
           const SizedBox(height: 16),
           SaveSimulationButton(
             simulation: SavedSimulation(
+              id: widget.savedSimulation?.id,
               createdAt: DateTime.now(),
               currency: currency.symbol,
               plan: _plan,

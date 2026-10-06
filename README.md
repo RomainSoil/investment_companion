@@ -27,7 +27,7 @@ lisant un cours.
 | Accueil : profil, état de la connexion, conseil du jour, accès rapides | Fait |
 | Navigation à cinq onglets | Fait |
 | Historique des cours sur 10 ans de 25 actifs, gardé sur le téléphone | Fait |
-| Questionnaire de profil investisseur et score expliqué | À venir |
+| Questionnaire de profil investisseur et actifs conseillés selon le risque | Fait |
 | Calculateur d'intérêts composés (hors connexion) | Fait |
 | Simulation « Et si j'avais investi… ? » sur un ETF ou une action | Fait |
 | Leçons courtes avec quiz (ETF ou action, PEA / PEL / compte-titres…) | À venir |

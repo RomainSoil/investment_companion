@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:investment_companion/domain/price_history.dart';
 import 'package:investment_companion/domain/savings_simulation.dart';
@@ -102,5 +104,54 @@ void main() {
 
   test('availableYears compte les années complètes de l’historique', () {
     expect(availableYears(_history()), 3);
+  });
+
+  group('annualVolatility', () {
+    test('est nulle pour un cours qui monte toujours au même rythme', () {
+      final history = PriceHistory(
+        symbol: 'TEST',
+        currency: 'USD',
+        exchange: 'TEST',
+        fetchedAt: DateTime(2026),
+        points: [
+          for (var i = 0; i < 365; i++)
+            PricePoint(
+              date: DateTime(2025, 1, 1 + i),
+              open: 1,
+              high: 1,
+              low: 1,
+              close: 100 * math.pow(1.001, i).toDouble(),
+            ),
+        ],
+      );
+
+      expect(history.annualVolatility, closeTo(0, 1e-9));
+    });
+
+    test('augmente avec l’ampleur des variations', () {
+      PriceHistory alternating(double amplitude) {
+        return PriceHistory(
+          symbol: 'TEST',
+          currency: 'USD',
+          exchange: 'TEST',
+          fetchedAt: DateTime(2026),
+          points: [
+            for (var i = 0; i < 365; i++)
+              PricePoint(
+                date: DateTime(2025, 1, 1 + i),
+                open: 1,
+                high: 1,
+                low: 1,
+                close: i.isEven ? 100 : 100 * (1 + amplitude),
+              ),
+          ],
+        );
+      }
+
+      expect(
+        alternating(0.05).annualVolatility,
+        greaterThan(alternating(0.01).annualVolatility),
+      );
+    });
   });
 }

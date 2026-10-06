@@ -28,12 +28,17 @@ class WhatIfSection extends StatelessWidget {
     required this.history,
     required this.plan,
     required this.onPlanChanged,
+    this.savedSimulationId,
   });
 
   final String assetName;
   final PriceHistory history;
   final SavingsPlan plan;
   final ValueChanged<SavingsPlan> onPlanChanged;
+
+  /// Identifiant de la simulation enregistrée rouverte, que le bouton met à
+  /// jour ; `null` pour une nouvelle simulation.
+  final int? savedSimulationId;
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +83,7 @@ class WhatIfSection extends StatelessWidget {
         const SizedBox(height: 16),
         SaveSimulationButton(
           simulation: SavedSimulation(
+            id: savedSimulationId,
             createdAt: DateTime.now(),
             assetSymbol: history.symbol,
             assetName: assetName,
