@@ -6,11 +6,14 @@ import 'core/theme/app_theme.dart';
 import 'data/app_preferences.dart';
 import 'data/connectivity_service.dart';
 import 'data/price_repository.dart';
+import 'data/simulation_database.dart';
 import 'features/shell/app_shell.dart';
 import 'features/welcome/welcome_screen.dart';
 import 'state/app_controller.dart';
 import 'state/connectivity_controller.dart';
 import 'state/navigation_controller.dart';
+import 'state/settings_controller.dart';
+import 'state/simulations_controller.dart';
 
 /// Racine de l'application.
 ///
@@ -26,11 +29,13 @@ class InvestmentCompanionApp extends StatelessWidget {
     required this.preferences,
     required this.connectivityService,
     required this.priceRepository,
+    required this.simulationDatabase,
   });
 
   final AppPreferences preferences;
   final ConnectivityService connectivityService;
   final PriceRepository priceRepository;
+  final SimulationDatabase simulationDatabase;
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +47,12 @@ class InvestmentCompanionApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<NavigationController>(
           create: (_) => NavigationController(),
+        ),
+        ChangeNotifierProvider<SettingsController>(
+          create: (_) => SettingsController(preferences),
+        ),
+        ChangeNotifierProvider<SimulationsController>(
+          create: (_) => SimulationsController(simulationDatabase)..load(),
         ),
         ChangeNotifierProvider<ConnectivityController>(
           // Créé tout de suite pour lancer la première vérification dès le

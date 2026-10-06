@@ -28,10 +28,12 @@ lisant un cours.
 | Navigation à cinq onglets | Fait |
 | Historique des cours sur 10 ans de 25 actifs, gardé sur le téléphone | Fait |
 | Questionnaire de profil investisseur et score expliqué | À venir |
-| Calculateur d'intérêts composés (hors connexion) | À venir |
-| Simulation « Et si j'avais investi… ? » sur un ETF ou une action | À venir |
+| Calculateur d'intérêts composés (hors connexion) | Fait |
+| Simulation « Et si j'avais investi… ? » sur un ETF ou une action | Fait |
 | Leçons courtes avec quiz (ETF ou action, PEA / PEL / compte-titres…) | À venir |
-| Simulations sauvegardées et actifs favoris | À venir |
+| Simulations sauvegardées (« Mes simulations ») | Fait |
+| Paramètres : devise d'affichage et taux de change dollar / euro | Fait |
+| Actifs favoris | À venir |
 
 ## Installation
 

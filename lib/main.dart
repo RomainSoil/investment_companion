@@ -7,10 +7,12 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 import 'app.dart';
+import 'data/app_database.dart';
 import 'data/app_preferences.dart';
 import 'data/connectivity_service.dart';
 import 'data/price_database.dart';
 import 'data/price_repository.dart';
+import 'data/simulation_database.dart';
 import 'data/twelve_data_client.dart';
 
 /// Point d'entrée de l'application.
@@ -31,16 +33,20 @@ Future<void> main() async {
     databaseFactory = databaseFactoryFfi;
   }
 
+  // Une seule base SQLite, partagée par les cours et les simulations.
+  final database = AppDatabase();
+
   runApp(
     InvestmentCompanionApp(
       preferences: AppPreferences(store),
       connectivityService: const SocketConnectivityService(),
       priceRepository: PriceRepository(
-        database: PriceDatabase(),
+        database: PriceDatabase(database),
         client: TwelveDataClient(
           apiKey: TwelveDataClient.apiKeyFromEnvironment,
         ),
       ),
+      simulationDatabase: SimulationDatabase(database),
     ),
   );
 }
