@@ -33,6 +33,8 @@ class AppTheme {
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.ink,
         surfaceTintColor: Colors.transparent,
+        // Pas d'ombre quand le contenu défile sous la barre.
+        scrolledUnderElevation: 0,
         titleTextStyle: AppTextStyles.heading,
       ),
       filledButtonTheme: FilledButtonThemeData(

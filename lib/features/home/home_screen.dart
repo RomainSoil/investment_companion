@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/utils/navigation.dart';
 import '../../core/widgets/status_badge.dart';
 import '../../domain/daily_tip.dart';
 import '../../domain/investor_profile.dart';
@@ -26,12 +27,6 @@ import 'widgets/tip_card.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  /// Change d'onglet. `read` suffit : on déclenche une action en réponse à un
-  /// appui, on n'a pas besoin d'écouter le contrôleur.
-  void _open(BuildContext context, AppTab tab) {
-    context.read<NavigationController>().goTo(tab);
-  }
-
   @override
   Widget build(BuildContext context) {
     // `select` : l'accueil ne se reconstruit que si le profil change.
@@ -49,8 +44,11 @@ class HomeScreen extends StatelessWidget {
       (lessons) => lessons.totalCount,
     );
 
+    // `read` suffit pour changer d'onglet : on réagit à un appui, on n'a pas
+    // besoin d'écouter le contrôleur.
+    void goTo(AppTab tab) => context.read<NavigationController>().goTo(tab);
+
     final now = DateTime.now();
-    final tip = tipOfTheDay(date: now, profile: profile);
 
     return SafeArea(
       bottom: false,
@@ -73,7 +71,7 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(width: 12),
                 ProfileChip(
                   profile: profile,
-                  onTap: () => _open(context, AppTab.profile),
+                  onTap: () => goTo(AppTab.profile),
                 ),
               ],
             ),
@@ -91,87 +89,84 @@ class HomeScreen extends StatelessWidget {
             ],
             const SizedBox(height: 16),
             TipCard(
-              tip: tip,
+              tip: tipOfTheDay(date: now, profile: profile),
               profile: profile,
-              onTap: () => _open(context, AppTab.learn),
+              onTap: () => goTo(AppTab.learn),
             ),
             const SizedBox(height: 16),
-            // IntrinsicHeight : les deux tuiles d'une ligne ont la même
-            // hauteur, celle de la plus haute.
-            IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: FeatureTile(
-                      icon: Icons.calculate_outlined,
-                      title: 'Intérêts composés',
-                      subtitle: 'Capital, versements, taux, durée',
-                      badge: const StatusBadge(
-                        label: 'Hors ligne',
-                        icon: Icons.check,
-                        tone: BadgeTone.positive,
-                      ),
-                      onTap: () => _open(context, AppTab.calculator),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FeatureTile(
-                      icon: Icons.show_chart,
-                      title: 'Simuler un ETF ou une action',
-                      subtitle: 'Et si j’avais investi…\u00A0?',
-                      badge: const StatusBadge(
-                        label: 'En ligne',
-                        icon: Icons.wifi,
-                        tone: BadgeTone.info,
-                      ),
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const AssetListScreen(),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+            _TileRow(
+              FeatureTile(
+                icon: Icons.calculate_outlined,
+                title: 'Intérêts composés',
+                subtitle: 'Capital, versements, taux, durée',
+                badge: const StatusBadge(
+                  label: 'Hors ligne',
+                  icon: Icons.check,
+                  tone: BadgeTone.positive,
+                ),
+                onTap: () => goTo(AppTab.calculator),
+              ),
+              FeatureTile(
+                icon: Icons.show_chart,
+                title: 'Simuler un ETF ou une action',
+                subtitle: 'Et si j’avais investi…\u00A0?',
+                badge: const StatusBadge(
+                  label: 'En ligne',
+                  icon: Icons.wifi,
+                  tone: BadgeTone.info,
+                ),
+                onTap: () => openScreen(context, const AssetListScreen()),
               ),
             ),
             const SizedBox(height: 12),
-            IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: FeatureTile(
-                      icon: Icons.menu_book_outlined,
-                      title: 'Apprendre',
-                      subtitle: 'ETF, actions, PEA, PEL…',
-                      badge: StatusBadge(
-                        label: '$lessonsDone / $lessonsTotal leçons',
-                        icon: Icons.check,
-                        tone: BadgeTone.positive,
-                      ),
-                      onTap: () => _open(context, AppTab.learn),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FeatureTile(
-                      icon: Icons.bookmark_border,
-                      title: 'Mes simulations',
-                      subtitle: 'Retrouvez vos calculs',
-                      badge: const StatusBadge(
-                        label: 'Sur le téléphone',
-                        icon: Icons.smartphone,
-                      ),
-                      onTap: () => _open(context, AppTab.simulations),
-                    ),
-                  ),
-                ],
+            _TileRow(
+              FeatureTile(
+                icon: Icons.menu_book_outlined,
+                title: 'Apprendre',
+                subtitle: 'ETF, actions, PEA, PEL…',
+                badge: StatusBadge(
+                  label: '$lessonsDone / $lessonsTotal leçons',
+                  icon: Icons.check,
+                  tone: BadgeTone.positive,
+                ),
+                onTap: () => goTo(AppTab.learn),
+              ),
+              FeatureTile(
+                icon: Icons.bookmark_border,
+                title: 'Mes simulations',
+                subtitle: 'Retrouvez vos calculs',
+                badge: const StatusBadge(
+                  label: 'Sur le téléphone',
+                  icon: Icons.smartphone,
+                ),
+                onTap: () => goTo(AppTab.simulations),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Deux tuiles côte à côte, de même largeur et de même hauteur.
+class _TileRow extends StatelessWidget {
+  const _TileRow(this.first, this.second);
+
+  final Widget first;
+  final Widget second;
+
+  @override
+  Widget build(BuildContext context) {
+    // IntrinsicHeight : les deux tuiles prennent la hauteur de la plus haute.
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(child: first),
+          const SizedBox(width: 12),
+          Expanded(child: second),
+        ],
       ),
     );
   }

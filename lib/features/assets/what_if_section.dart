@@ -65,8 +65,8 @@ class WhatIfSection extends StatelessWidget {
             style: AppTextStyles.heading),
         const SizedBox(height: 4),
         Text(
-          'Rendement moyen de ${history.symbol} sur ${shownPlan.years} '
-          'an${shownPlan.years > 1 ? 's' : ''} : '
+          'Rendement moyen de ${history.symbol} sur '
+          '${formatYears(shownPlan.years)} : '
           '${formatChange(yearlyReturn)} par an.',
           style: AppTextStyles.bodyMuted,
         ),

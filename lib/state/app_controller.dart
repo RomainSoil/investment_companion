@@ -20,8 +20,7 @@ enum AppStage {
 /// de l'application.
 class AppController extends ChangeNotifier {
   AppController(this._preferences)
-      : _stage =
-            _preferences.welcomeSeen ? AppStage.ready : AppStage.welcome,
+      : _stage = _preferences.welcomeSeen ? AppStage.ready : AppStage.welcome,
         _profile = _preferences.profileType;
 
   final AppPreferences _preferences;

@@ -49,4 +49,9 @@ void main() {
       expect(formatChange(-0.04), '-4,0\u00A0%');
     });
   });
+
+  test('formatYears accorde « an » au nombre d’années', () {
+    expect(formatYears(1), '1 an');
+    expect(formatYears(10), '10 ans');
+  });
 }

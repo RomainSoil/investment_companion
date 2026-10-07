@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/status_badge.dart';
 import '../../domain/lesson.dart';
@@ -48,12 +47,7 @@ class _LessonScreenState extends State<LessonScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Leçon'),
-        backgroundColor: AppColors.background,
-        surfaceTintColor: Colors.transparent,
-        scrolledUnderElevation: 0,
-      ),
+      appBar: AppBar(title: const Text('Leçon')),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),

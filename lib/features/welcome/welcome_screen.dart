@@ -78,15 +78,10 @@ class _WelcomeIntro extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            const Expanded(
+            Expanded(
               child: Text(
                 'Investment Companion',
-                style: TextStyle(
-                  fontFamily: AppFonts.body,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.ink,
-                ),
+                style: AppTextStyles.label.copyWith(fontSize: 16),
               ),
             ),
           ],
@@ -161,21 +156,15 @@ class _PedagogicalNotice extends StatelessWidget {
         color: AppColors.primarySoft,
         borderRadius: BorderRadius.circular(14),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.shield_outlined, size: 18, color: AppColors.primary),
-          SizedBox(width: 10),
+          const Icon(Icons.shield_outlined, size: 18, color: AppColors.primary),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               'Application pédagogique\u00A0: aucune transaction réelle, aucune '
               'connexion à une banque ou à un courtier.',
-              style: TextStyle(
-                fontFamily: AppFonts.body,
-                fontSize: 13,
-                height: 1.4,
-                fontWeight: FontWeight.w500,
-                color: AppColors.primary,
-              ),
+              style: AppTextStyles.caption.copyWith(color: AppColors.primary),
             ),
           ),
         ],

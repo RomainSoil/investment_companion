@@ -39,3 +39,6 @@ String formatPercent(double ratio) {
   final percent = (ratio * 100).toStringAsFixed(1).replaceAll('.', ',');
   return '$percent\u00A0%';
 }
+
+/// Durée en années, par exemple « 1 an » ou « 10 ans ».
+String formatYears(int years) => years > 1 ? '$years ans' : '$years an';

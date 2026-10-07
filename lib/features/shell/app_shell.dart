@@ -5,32 +5,32 @@ import '../../core/theme/app_colors.dart';
 import '../../state/navigation_controller.dart';
 import '../calculator/compound_interest_screen.dart';
 import '../home/home_screen.dart';
-import '../profile/profile_screen.dart';
 import '../learn/learn_screen.dart';
+import '../profile/profile_screen.dart';
 import '../saved_simulations/saved_simulations_screen.dart';
 
 /// Structure de l'application une fois l'écran de bienvenue passé : un écran
 /// par onglet et la barre de navigation en bas.
+///
+/// Écrans et boutons de la barre sont construits à partir de [AppTab] : ils
+/// sont toujours dans le même ordre. Pour ajouter un onglet, on l'ajoute à
+/// l'énumération puis aux deux `switch` ci-dessous (le compilateur signale
+/// tout oubli).
 class AppShell extends StatelessWidget {
   const AppShell({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final navigation = context.watch<NavigationController>();
+    final current = context.select<NavigationController, AppTab>(
+      (navigation) => navigation.current,
+    );
 
     return Scaffold(
-      // IndexedStack garde les cinq écrans en mémoire et n'affiche que celui
+      // IndexedStack garde tous les écrans en mémoire et n'affiche que celui
       // de l'onglet courant : on retrouve chaque onglet tel qu'on l'a laissé.
-      // L'ordre des écrans suit celui de l'énumération AppTab.
       body: IndexedStack(
-        index: navigation.current.index,
-        children: const [
-          HomeScreen(),
-          CompoundInterestScreen(),
-          LearnScreen(),
-          SavedSimulationsScreen(),
-          ProfileScreen(),
-        ],
+        index: current.index,
+        children: [for (final tab in AppTab.values) _screenFor(tab)],
       ),
       bottomNavigationBar: DecoratedBox(
         // Filet de séparation dessiné par-dessus le haut de la barre.
@@ -39,39 +39,50 @@ class AppShell extends StatelessWidget {
           border: Border(top: BorderSide(color: AppColors.line)),
         ),
         child: NavigationBar(
-          selectedIndex: navigation.current.index,
-          onDestinationSelected: (index) {
-            navigation.goTo(AppTab.values[index]);
-          },
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home),
-              label: 'Accueil',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.calculate_outlined),
-              selectedIcon: Icon(Icons.calculate),
-              label: 'Calculer',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.menu_book_outlined),
-              selectedIcon: Icon(Icons.menu_book),
-              label: 'Apprendre',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.bookmark_border),
-              selectedIcon: Icon(Icons.bookmark),
-              label: 'Simulations',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline),
-              selectedIcon: Icon(Icons.person),
-              label: 'Profil',
-            ),
+          selectedIndex: current.index,
+          onDestinationSelected: (index) =>
+              context.read<NavigationController>().goTo(AppTab.values[index]),
+          destinations: [
+            for (final tab in AppTab.values) _destinationFor(tab),
           ],
         ),
       ),
     );
   }
+}
+
+/// Écran affiché pour [tab].
+Widget _screenFor(AppTab tab) {
+  return switch (tab) {
+    AppTab.home => const HomeScreen(),
+    AppTab.calculator => const CompoundInterestScreen(),
+    AppTab.learn => const LearnScreen(),
+    AppTab.simulations => const SavedSimulationsScreen(),
+    AppTab.profile => const ProfileScreen(),
+  };
+}
+
+/// Bouton de [tab] dans la barre de navigation.
+NavigationDestination _destinationFor(AppTab tab) {
+  final (icon, selectedIcon, label) = switch (tab) {
+    AppTab.home => (Icons.home_outlined, Icons.home, 'Accueil'),
+    AppTab.calculator => (
+        Icons.calculate_outlined,
+        Icons.calculate,
+        'Calculer'
+      ),
+    AppTab.learn => (Icons.menu_book_outlined, Icons.menu_book, 'Apprendre'),
+    AppTab.simulations => (
+        Icons.bookmark_border,
+        Icons.bookmark,
+        'Simulations'
+      ),
+    AppTab.profile => (Icons.person_outline, Icons.person, 'Profil'),
+  };
+
+  return NavigationDestination(
+    icon: Icon(icon),
+    selectedIcon: Icon(selectedIcon),
+    label: label,
+  );
 }

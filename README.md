@@ -35,6 +35,11 @@ lisant un cours.
 | Paramètres : devise d'affichage et taux de change dollar / euro | Fait |
 | Actifs favoris | À venir |
 
+## Documentation technique
+
+Architecture, écrans, appels à l'API, stockage, états partagés et recettes
+pour modifier l'application : voir [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 ## Installation
 
 Prérequis : Flutter avec Dart 3.5 ou plus récent.

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/number_field.dart';
 import '../../../domain/savings_simulation.dart';
 
@@ -71,7 +72,7 @@ class SavingsPlanForm extends StatelessWidget {
         ],
         const SizedBox(height: 16),
         Text(
-          'Durée : ${plan.years} an${plan.years > 1 ? 's' : ''}',
+          'Durée : ${formatYears(plan.years)}',
           style: AppTextStyles.label,
         ),
         if (maxYears > 1)
@@ -80,7 +81,7 @@ class SavingsPlanForm extends StatelessWidget {
             min: 1,
             max: maxYears.toDouble(),
             divisions: maxYears - 1,
-            label: '${plan.years} ans',
+            label: formatYears(plan.years),
             onChanged: (value) =>
                 onChanged(plan.copyWith(years: value.round())),
           ),

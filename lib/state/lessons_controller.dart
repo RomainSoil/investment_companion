@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 import '../data/app_preferences.dart';
-import '../data/lesson_catalog.dart';
 import '../domain/lesson.dart';
+import '../domain/lesson_catalog.dart';
 
 /// Leçons et progression de l'utilisateur.
 ///

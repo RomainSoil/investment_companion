@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/app_card.dart';
 
 /// Tuile de l'accueil qui mène à une fonctionnalité.
 class FeatureTile extends StatelessWidget {
@@ -25,48 +26,34 @@ class FeatureTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(18)),
-        side: BorderSide(color: AppColors.line),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
+    return AppCard(
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        // La pastille reste en bas même si la tuile voisine est plus haute.
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            // La pastille reste en bas même si la tuile voisine est plus haute.
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.primarySoft,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(icon, size: 20, color: AppColors.primary),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(title, style: AppTextStyles.label),
-                  const SizedBox(height: 4),
-                  Text(subtitle, style: AppTextStyles.caption),
-                ],
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.primarySoft,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, size: 20, color: AppColors.primary),
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: badge,
-              ),
+              const SizedBox(height: 10),
+              Text(title, style: AppTextStyles.label),
+              const SizedBox(height: 4),
+              Text(subtitle, style: AppTextStyles.caption),
             ],
           ),
-        ),
+          Padding(padding: const EdgeInsets.only(top: 12), child: badge),
+        ],
       ),
     );
   }

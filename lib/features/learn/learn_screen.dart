@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/utils/navigation.dart';
+import '../../core/widgets/app_card.dart';
 import '../../domain/lesson.dart';
 import '../../state/lessons_controller.dart';
 import 'lesson_screen.dart';
@@ -23,20 +25,11 @@ class _LearnScreenState extends State<LearnScreen> {
   /// Thème affiché, ou `null` pour tout afficher.
   LessonCategory? _filter;
 
-  void _openLesson(Lesson lesson) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => LessonScreen(lesson: lesson),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<LessonsController>();
-    final categories = _filter == null
-        ? LessonCategory.values
-        : <LessonCategory>[_filter!];
+    final categories =
+        _filter == null ? LessonCategory.values : <LessonCategory>[_filter!];
 
     return SafeArea(
       bottom: false,
@@ -82,7 +75,7 @@ class _LearnScreenState extends State<LearnScreen> {
               LessonTile(
                 lesson: lesson,
                 status: controller.statusOf(lesson.id),
-                onTap: () => _openLesson(lesson),
+                onTap: () => openScreen(context, LessonScreen(lesson: lesson)),
               ),
           ],
         ],
@@ -105,13 +98,8 @@ class _ProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AppCard(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.line),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -143,20 +131,18 @@ class _ProgressCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          const Row(
+          Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.download_done,
                 size: 15,
                 color: AppColors.primary,
               ),
-              SizedBox(width: 6),
+              const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   'Contenu enregistré sur le téléphone',
-                  style: TextStyle(
-                    fontFamily: AppFonts.body,
-                    fontSize: 13,
+                  style: AppTextStyles.caption.copyWith(
                     fontWeight: FontWeight.w600,
                     color: AppColors.primary,
                   ),

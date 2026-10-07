@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_text_styles.dart';
+import '../../core/utils/navigation.dart';
 import '../../core/widgets/status_badge.dart';
 import '../../domain/asset.dart';
 import 'asset_detail_screen.dart';
@@ -38,11 +39,7 @@ class AssetTile extends StatelessWidget {
         ),
       ),
       trailing: const Icon(Icons.chevron_right),
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => AssetDetailScreen(asset: asset),
-        ),
-      ),
+      onTap: () => openScreen(context, AssetDetailScreen(asset: asset)),
     );
   }
 }

@@ -42,7 +42,8 @@ const List<DailyTip> dailyTips = [
         'Plus votre horizon est long, plus vous pouvez traverser des baisses temporaires.',
   ),
   DailyTip(
-    text: 'Les performances passées ne garantissent pas les performances futures.',
+    text:
+        'Les performances passées ne garantissent pas les performances futures.',
   ),
   DailyTip(
     text:
