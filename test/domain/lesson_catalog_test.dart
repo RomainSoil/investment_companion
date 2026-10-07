@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:investment_companion/data/lesson_catalog.dart';
+import 'package:investment_companion/domain/lesson_catalog.dart';
 import 'package:investment_companion/domain/lesson.dart';
 
 void main() {

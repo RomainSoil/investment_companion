@@ -31,6 +31,14 @@ String formatPrice(double value, String currency) {
 
 /// Variation en pourcentage, signée, par exemple « +12,3 % » ou « -4,0 % ».
 String formatChange(double ratio) {
-  final percent = (ratio * 100).toStringAsFixed(1).replaceAll('.', ',');
-  return '${ratio >= 0 ? '+' : ''}$percent\u00A0%';
+  return '${ratio >= 0 ? '+' : ''}${formatPercent(ratio)}';
 }
+
+/// Pourcentage sans signe, par exemple « 18,2 % ».
+String formatPercent(double ratio) {
+  final percent = (ratio * 100).toStringAsFixed(1).replaceAll('.', ',');
+  return '$percent\u00A0%';
+}
+
+/// Durée en années, par exemple « 1 an » ou « 10 ans ».
+String formatYears(int years) => years > 1 ? '$years ans' : '$years an';

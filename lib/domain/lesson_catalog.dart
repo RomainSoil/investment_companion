@@ -1,4 +1,4 @@
-import '../domain/lesson.dart';
+import 'lesson.dart';
 
 /// Les leçons de l'application.
 ///
@@ -24,10 +24,13 @@ const List<Lesson> lessonCatalog = [
       LessonComparison(
         columns: ['Action', 'ETF'],
         rows: [
-          ComparisonRow('Entreprises', ['Une seule', 'Des dizaines à des milliers']),
-          ComparisonRow('Risque', ['Dépend d’une société', 'Réparti entre toutes']),
+          ComparisonRow(
+              'Entreprises', ['Une seule', 'Des dizaines à des milliers']),
+          ComparisonRow(
+              'Risque', ['Dépend d’une société', 'Réparti entre toutes']),
           ComparisonRow('Frais', ['Courtage', 'Courtage et frais annuels']),
-          ComparisonRow('Suivi', ['Choisir et surveiller', 'Suit l’indice tout seul']),
+          ComparisonRow(
+              'Suivi', ['Choisir et surveiller', 'Suit l’indice tout seul']),
         ],
       ),
       LessonNote(
@@ -49,8 +52,7 @@ const List<Lesson> lessonCatalog = [
           'uniquement des obligations',
         ],
         correctIndex: 1,
-        explanation:
-            'Le MSCI World regroupe de nombreuses entreprises de pays '
+        explanation: 'Le MSCI World regroupe de nombreuses entreprises de pays '
             'développés\u00A0: l’ETF qui le suit les détient toutes.',
       ),
       QuizQuestion(
@@ -91,16 +93,26 @@ const List<Lesson> lessonCatalog = [
     ],
     quiz: [
       QuizQuestion(
-        question: 'Qu’est-ce qui renforce le plus l’effet des intérêts composés\u00A0?',
-        options: ['La durée du placement', 'Le jour de la semaine', 'Le nom de la banque'],
+        question:
+            'Qu’est-ce qui renforce le plus l’effet des intérêts composés\u00A0?',
+        options: [
+          'La durée du placement',
+          'Le jour de la semaine',
+          'Le nom de la banque'
+        ],
         correctIndex: 0,
         explanation:
             'Chaque année supplémentaire fait travailler les gains des années '
             'précédentes.',
       ),
       QuizQuestion(
-        question: '1\u00A0000\u00A0€ à 5\u00A0% par an, intérêts réinvestis\u00A0: après 10 ans, on a environ…',
-        options: ['1\u00A0050\u00A0€', '1\u00A0500\u00A0€', '1\u00A0629\u00A0€'],
+        question:
+            '1\u00A0000\u00A0€ à 5\u00A0% par an, intérêts réinvestis\u00A0: après 10 ans, on a environ…',
+        options: [
+          '1\u00A0050\u00A0€',
+          '1\u00A0500\u00A0€',
+          '1\u00A0629\u00A0€'
+        ],
         correctIndex: 2,
         explanation: '1\u00A0000 × 1,05 puissance 10 ≈ 1\u00A0629\u00A0€.',
       ),
@@ -147,8 +159,7 @@ const List<Lesson> lessonCatalog = [
           'Une seule action très connue',
         ],
         correctIndex: 1,
-        explanation:
-            'Un indice mondial couvre de nombreux pays, secteurs et '
+        explanation: 'Un indice mondial couvre de nombreux pays, secteurs et '
             'entreprises.',
       ),
     ],
@@ -172,8 +183,13 @@ const List<Lesson> lessonCatalog = [
             'De l’argent, rémunéré à taux fixe',
             'Tous les titres',
           ]),
-          ComparisonRow('Plafond', ['150\u00A0000\u00A0€ de versements', '61\u00A0200\u00A0€', 'Aucun']),
-          ComparisonRow('Risque', ['Perte possible', 'Capital garanti', 'Perte possible']),
+          ComparisonRow('Plafond', [
+            '150\u00A0000\u00A0€ de versements',
+            '61\u00A0200\u00A0€',
+            'Aucun'
+          ]),
+          ComparisonRow('Risque',
+              ['Perte possible', 'Capital garanti', 'Perte possible']),
           ComparisonRow('Atout', [
             'Fiscalité allégée après 5 ans',
             'Taux connu à l’ouverture',
@@ -292,7 +308,8 @@ const List<Lesson> lessonCatalog = [
     ],
     quiz: [
       QuizQuestion(
-        question: 'Vous aurez besoin de cet argent dans un an. Le plus adapté est…',
+        question:
+            'Vous aurez besoin de cet argent dans un an. Le plus adapté est…',
         options: [
           'un placement disponible et sans risque',
           'une seule action prometteuse',
@@ -335,7 +352,8 @@ const List<Lesson> lessonCatalog = [
     ],
     quiz: [
       QuizQuestion(
-        question: 'Votre placement rapporte 3\u00A0% et l’inflation est de 3\u00A0%. Votre pouvoir d’achat…',
+        question:
+            'Votre placement rapporte 3\u00A0% et l’inflation est de 3\u00A0%. Votre pouvoir d’achat…',
         options: ['augmente', 'reste à peu près stable', 'double'],
         correctIndex: 1,
         explanation:

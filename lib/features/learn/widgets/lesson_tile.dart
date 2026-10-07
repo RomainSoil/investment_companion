@@ -6,15 +6,12 @@ import '../../../core/widgets/status_badge.dart';
 import '../../../domain/lesson.dart';
 
 /// Icône associée à chaque thème de leçon.
-IconData iconForCategory(LessonCategory category) {
-  switch (category) {
-    case LessonCategory.basics:
-      return Icons.layers_outlined;
-    case LessonCategory.envelopes:
-      return Icons.shield_outlined;
-    case LessonCategory.risk:
-      return Icons.show_chart;
-  }
+IconData _iconFor(LessonCategory category) {
+  return switch (category) {
+    LessonCategory.basics => Icons.layers_outlined,
+    LessonCategory.envelopes => Icons.shield_outlined,
+    LessonCategory.risk => Icons.show_chart,
+  };
 }
 
 /// Ligne d'une leçon dans la liste, avec son avancement à droite.
@@ -32,9 +29,8 @@ class LessonTile extends StatelessWidget {
 
   /// À chaque état de la leçon correspond un affichage.
   Widget _trailing() {
-    switch (status) {
-      case LessonStatus.done:
-        return Container(
+    return switch (status) {
+      LessonStatus.done => Container(
           width: 28,
           height: 28,
           decoration: const BoxDecoration(
@@ -42,12 +38,12 @@ class LessonTile extends StatelessWidget {
             shape: BoxShape.circle,
           ),
           child: const Icon(Icons.check, size: 16, color: Colors.white),
-        );
-      case LessonStatus.inProgress:
-        return const StatusBadge(label: 'En cours', tone: BadgeTone.info);
-      case LessonStatus.todo:
-        return const Icon(Icons.chevron_right, color: AppColors.muted);
-    }
+        ),
+      LessonStatus.inProgress =>
+        const StatusBadge(label: 'En cours', tone: BadgeTone.info),
+      LessonStatus.todo =>
+        const Icon(Icons.chevron_right, color: AppColors.muted),
+    };
   }
 
   @override
@@ -72,7 +68,7 @@ class LessonTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                iconForCategory(lesson.category),
+                _iconFor(lesson.category),
                 size: 20,
                 color: AppColors.primary,
               ),

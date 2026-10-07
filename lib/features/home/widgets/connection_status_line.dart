@@ -36,24 +36,23 @@ class ConnectionStatusLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final IconData icon;
-    final String text;
-    final Color color;
-
-    switch (status) {
-      case ConnectionStatus.checking:
-        icon = Icons.sync;
-        text = 'Vérification de la connexion…';
-        color = AppColors.muted;
-      case ConnectionStatus.online:
-        icon = Icons.wifi;
-        text = 'En ligne$_detail';
-        color = AppColors.muted;
-      case ConnectionStatus.offline:
-        icon = Icons.wifi_off;
-        text = 'Hors connexion$_detail';
-        color = AppColors.warning;
-    }
+    final (icon, text, color) = switch (status) {
+      ConnectionStatus.checking => (
+          Icons.sync,
+          'Vérification de la connexion…',
+          AppColors.muted,
+        ),
+      ConnectionStatus.online => (
+          Icons.wifi,
+          'En ligne$_detail',
+          AppColors.muted,
+        ),
+      ConnectionStatus.offline => (
+          Icons.wifi_off,
+          'Hors connexion$_detail',
+          AppColors.warning,
+        ),
+    };
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 250),

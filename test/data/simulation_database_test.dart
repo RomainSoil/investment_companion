@@ -18,7 +18,7 @@ void main() {
       AppDatabase(path: inMemoryDatabasePath),
     );
 
-    await database.insert(
+    await database.save(
       SavedSimulation(
         createdAt: DateTime(2026, 10, 6),
         assetSymbol: 'SPY',

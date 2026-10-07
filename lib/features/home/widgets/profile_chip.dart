@@ -38,10 +38,7 @@ class ProfileChip extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 label,
-                style: const TextStyle(
-                  fontFamily: AppFonts.body,
-                  fontSize: 13,
-                  height: 1.5,
+                style: AppTextStyles.caption.copyWith(
                   fontWeight: FontWeight.w700,
                   color: AppColors.primaryInk,
                 ),

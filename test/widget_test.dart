@@ -8,6 +8,10 @@ import 'package:investment_companion/data/price_database.dart';
 import 'package:investment_companion/data/price_repository.dart';
 import 'package:investment_companion/data/twelve_data_client.dart';
 import 'package:investment_companion/domain/saved_simulation.dart';
+import 'package:investment_companion/features/calculator/compound_interest_screen.dart';
+import 'package:investment_companion/features/profile/questionnaire_screen.dart';
+import 'package:investment_companion/features/learn/learn_screen.dart';
+import 'package:investment_companion/features/learn/lesson_screen.dart';
 import 'package:investment_companion/domain/savings_simulation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -65,6 +69,28 @@ Future<void> openLesson(WidgetTester tester, String title) async {
   await tester.ensureVisible(tile);
   await tester.pumpAndSettle();
   await tester.tap(tile);
+  await tester.pumpAndSettle();
+}
+
+/// Fait défiler la liste de l'écran [screen] jusqu'à rendre [target] visible.
+///
+/// On vise la liste de cet écran précisément : d'autres listes existent en
+/// même temps (onglets gardés en mémoire, champs de texte).
+Future<void> scrollTo(
+  WidgetTester tester,
+  Finder target, {
+  required Type screen,
+}) async {
+  await tester.scrollUntilVisible(
+    target,
+    200,
+    scrollable: find
+        .descendant(of: find.byType(screen), matching: find.byType(Scrollable))
+        .first,
+  );
+  // `scrollUntilVisible` s'arrête dès que l'élément existe, parfois juste sous
+  // le bord de l'écran : on finit de l'amener à l'écran.
+  await tester.ensureVisible(target);
   await tester.pumpAndSettle();
 }
 
@@ -213,11 +239,7 @@ void main() {
       );
       // Le bouton est en bas de la liste, construite au fil du défilement.
       final save = find.text('Enregistrer la simulation');
-      await tester.scrollUntilVisible(
-        save,
-        300,
-        scrollable: find.byType(Scrollable).first,
-      );
+      await scrollTo(tester, save, screen: CompoundInterestScreen);
       await tester.tap(save);
       await tester.pumpAndSettle();
       expect(find.text('Simulation enregistrée.'), findsOneWidget);
@@ -226,17 +248,63 @@ void main() {
       expect(find.text('Intérêts composés'), findsOneWidget);
       expect(find.textContaining('Aucune simulation'), findsNothing);
 
-      // La carte rouvre le calculateur, prérempli.
+      // La carte rouvre le calculateur, prérempli ; le bouton met à jour la
+      // simulation au lieu d'en enregistrer une seconde.
       await tester.tap(find.text('Intérêts composés'));
       await tester.pumpAndSettle();
       expect(find.widgetWithText(TextFormField, '2500'), findsOneWidget);
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, '2500'),
+        '4000',
+      );
+      final update = find.text('Mettre à jour la simulation');
+      await scrollTo(tester, update, screen: CompoundInterestScreen);
+      await tester.tap(update);
+      await tester.pumpAndSettle();
+      expect(find.text('Simulation mise à jour.'), findsOneWidget);
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
+
+      expect(find.text('Intérêts composés'), findsOneWidget);
+      expect(find.textContaining('4\u00A0000,00'), findsOneWidget);
 
       await tester.tap(find.byTooltip('Supprimer'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Aucune simulation'), findsOneWidget);
     });
+  });
+
+  testWidgets('le questionnaire attribue un profil et conseille des actifs',
+      (tester) async {
+    await pumpApp(tester, stored: alreadyWelcomed);
+
+    await tapTab(tester, 'Profil');
+    expect(find.text('Votre profil'), findsOneWidget);
+    await tester.tap(find.text('Commencer le questionnaire'));
+    await tester.pumpAndSettle();
+
+    // Réponses les plus prudentes : 0 point chacune.
+    for (final answer in [
+      'Dans moins de 3 ans',
+      'Protéger mon épargne',
+      'Je vends tout pour limiter la perte',
+      'Jamais',
+      'Non',
+    ]) {
+      await scrollTo(tester, find.text(answer), screen: QuestionnaireScreen);
+      await tester.tap(find.text(answer));
+      await tester.pump();
+    }
+    final submit = find.text('Voir mon profil');
+    await scrollTo(tester, submit, screen: QuestionnaireScreen);
+    await tester.tap(submit);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Profil Prudent'), findsOneWidget);
+    expect(find.text('Score 0 / 10 : profil prudent.'), findsOneWidget);
+    // L'obligataire AGG fait partie des actifs à risque faible.
+    expect(find.text('iShares Core US Aggregate Bond'), findsOneWidget);
   });
 
   testWidgets('une simulation sur un actif rouvre sa fiche, préremplie',
@@ -309,34 +377,33 @@ void main() {
       await openLesson(tester, 'Les intérêts composés');
 
       final answer = find.text('La durée du placement');
-      await tester.scrollUntilVisible(
-        answer,
-        200,
-        scrollable: find.byType(Scrollable).last,
-      );
+      await scrollTo(tester, answer, screen: LessonScreen);
       await tester.tap(answer);
       await tester.pumpAndSettle();
 
       expect(find.text('Bonne réponse.'), findsOneWidget);
     });
 
-    testWidgets('terminer une leçon met à jour la progression',
-        (tester) async {
+    testWidgets('terminer une leçon met à jour la progression', (tester) async {
       await pumpApp(tester, stored: alreadyWelcomed);
       await tapTab(tester, 'Apprendre');
 
       await openLesson(tester, 'Les intérêts composés');
 
       final finish = find.textContaining('terminé la leçon');
-      await tester.scrollUntilVisible(
-        finish,
-        200,
-        scrollable: find.byType(Scrollable).last,
-      );
+      await scrollTo(tester, finish, screen: LessonScreen);
       await tester.tap(finish);
       await tester.pumpAndSettle();
 
-      expect(find.text('1 / 7 leçons'), findsOneWidget);
+      // De retour sur la liste, qui avait défilé jusqu'à la leçon : on
+      // remonte jusqu'à la carte de progression.
+      final progress = find.text('1 / 7 leçons');
+      await tester.dragUntilVisible(
+        progress,
+        find.byType(LearnScreen),
+        const Offset(0, 300),
+      );
+      expect(progress, findsOneWidget);
 
       final store = await SharedPreferences.getInstance();
       expect(

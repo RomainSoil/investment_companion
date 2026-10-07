@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../domain/lesson.dart';
 
 /// Une question du quiz.
@@ -26,13 +27,7 @@ class _QuizQuestionCardState extends State<QuizQuestionCard> {
     final question = widget.question;
     final selected = _selected;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.line),
-      ),
+    return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -95,28 +90,26 @@ class _Option extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color background;
-    final Color border;
-    final IconData icon;
-    final Color iconColor;
-
-    switch (state) {
-      case _OptionState.idle:
-        background = AppColors.surface;
-        border = AppColors.line;
-        icon = Icons.radio_button_unchecked;
-        iconColor = AppColors.chartNeutral;
-      case _OptionState.correct:
-        background = AppColors.primarySoft;
-        border = AppColors.primary;
-        icon = Icons.check_circle;
-        iconColor = AppColors.primary;
-      case _OptionState.wrong:
-        background = AppColors.dangerSoft;
-        border = AppColors.danger;
-        icon = Icons.cancel;
-        iconColor = AppColors.danger;
-    }
+    final (background, border, icon, iconColor) = switch (state) {
+      _OptionState.idle => (
+          AppColors.surface,
+          AppColors.line,
+          Icons.radio_button_unchecked,
+          AppColors.chartNeutral,
+        ),
+      _OptionState.correct => (
+          AppColors.primarySoft,
+          AppColors.primary,
+          Icons.check_circle,
+          AppColors.primary,
+        ),
+      _OptionState.wrong => (
+          AppColors.dangerSoft,
+          AppColors.danger,
+          Icons.cancel,
+          AppColors.danger,
+        ),
+    };
 
     return Material(
       color: background,

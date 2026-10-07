@@ -23,17 +23,11 @@ class OfflineBanner extends StatelessWidget {
         children: [
           const Icon(Icons.wifi_off, size: 18, color: AppColors.warning),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Text(
               'Hors connexion. Le calculateur d’intérêts composés et les '
               'leçons restent disponibles.',
-              style: TextStyle(
-                fontFamily: AppFonts.body,
-                fontSize: 13,
-                height: 1.4,
-                fontWeight: FontWeight.w500,
-                color: AppColors.warning,
-              ),
+              style: AppTextStyles.caption.copyWith(color: AppColors.warning),
             ),
           ),
           TextButton(
