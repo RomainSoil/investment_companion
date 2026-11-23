@@ -1,15 +1,15 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
 
-/// Courbe d'illustration de l'écran de bienvenue : la valeur d'un placement
-/// régulier (trait plein) s'écarte peu à peu du montant versé (pointillés).
+/// Graphique d'illustration de l'écran de bienvenue : un placement régulier,
+/// avec ses hausses et ses baisses. La surface grise est le montant versé,
+/// la surface verte au-dessus correspond aux gains des intérêts composés.
 ///
 /// Animation codée : un [AnimationController] fait passer une progression de
-/// 0 à 1, et le dessin (voir [GrowthChartPainter]) ne révèle que la partie de
-/// la courbe correspondant à cette progression.
+/// 0 à 1, et le dessin (voir [GrowthChartPainter]) ne révèle que la partie du
+/// graphique correspondant à cette progression.
 class GrowthChart extends StatefulWidget {
   const GrowthChart({super.key});
 
@@ -20,26 +20,18 @@ class GrowthChart extends StatefulWidget {
 class _GrowthChartState extends State<GrowthChart>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final CurvedAnimation _progress;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1600),
-    );
-    // La courbe démarre vite puis ralentit en arrivant au bout.
-    _progress = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    );
-    _controller.forward();
+      duration: const Duration(milliseconds: 2000),
+    )..forward();
   }
 
   @override
   void dispose() {
-    _progress.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -48,78 +40,129 @@ class _GrowthChartState extends State<GrowthChart>
   Widget build(BuildContext context) {
     return Semantics(
       label:
-          'Graphique : la valeur d’un placement régulier dépasse peu à peu le montant versé.',
-      child: AnimatedBuilder(
-        animation: _progress,
-        builder: (context, child) {
-          return CustomPaint(
-            painter: GrowthChartPainter(progress: _progress.value),
-            child: child,
-          );
-        },
-        // Occupe toute la place disponible ; n'est pas reconstruit à chaque
-        // image de l'animation.
-        child: const SizedBox.expand(),
+          'Graphique : la valeur d’un placement régulier monte et baisse, mais '
+          'les gains des intérêts composés s’ajoutent peu à peu au montant versé.',
+      child: Column(
+        children: [
+          Expanded(
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: GrowthChartPainter(progress: _controller.value),
+                  child: child,
+                );
+              },
+              child: const SizedBox.expand(),
+            ),
+          ),
+          const SizedBox(height: 10),
+          const Row(
+            children: [
+              _LegendItem(
+                color: AppColors.chartNeutral,
+                text: 'Montant versé',
+              ),
+              SizedBox(width: 16),
+              _LegendItem(
+                color: AppColors.primary,
+                text: 'Intérêts composés',
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Dessine la courbe jusqu'à la fraction [progress] de sa largeur (0 à 1).
+class _LegendItem extends StatelessWidget {
+  const _LegendItem({required this.color, required this.text});
+
+  final Color color;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(text, style: AppTextStyles.caption.copyWith(fontSize: 12)),
+      ],
+    );
+  }
+}
+
+/// Dessine le graphique jusqu'à la fraction [progress] de sa largeur (0 à 1).
 class GrowthChartPainter extends CustomPainter {
   GrowthChartPainter({required this.progress});
 
   final double progress;
 
-  static const int _steps = 24;
+  /// Rendement de chaque période : des hausses et des baisses, comme sur un
+  /// vrai marché. Ce sont des valeurs d'illustration, pas des données réelles.
+  static const List<double> _returns = [
+    0.07, -0.03, 0.09, 0.05, -0.06, 0.16, 0.11, 0.22, //
+    -0.15, 0.10, 0.06, 0.12, -0.2, 0.26, 0.11, 0.1, //
+    -0.08, 0.22, 0.07, -0.11, 0.12, 0.13, 0.14, 0.05, //
+  ];
 
-  /// Montant versé : 100 au départ, puis 60 à chaque période.
-  static double _invested(int step) => 100 + 60.0 * step;
+  /// Versement de départ, puis versement ajouté à chaque période.
+  static const double _deposit = 100;
+  static const double _monthlyDeposit = 60;
 
-  /// Valeur du placement si chaque versement rapporte 0,6 % par période.
-  /// Ce sont des valeurs d'illustration, pas des données de marché.
-  static double _value(int step) {
-    const growth = 1.006;
-    final factor = math.pow(growth, step).toDouble();
-    return 100 * factor + 60 * (factor - 1) / (growth - 1);
-  }
+  /// Valeur du placement à chaque période : la valeur précédente rapporte
+  /// son rendement (intérêts composés), puis on ajoute le versement.
+  static final List<double> _values = () {
+    final values = [_deposit];
+    for (final rate in _returns) {
+      values.add(values.last * (1 + rate) + _monthlyDeposit);
+    }
+    return values;
+  }();
 
   @override
   void paint(Canvas canvas, Size size) {
-    final maxValue = _value(_steps) * 1.08;
+    final steps = _returns.length;
+    final maxValue = _values.last * 1.1;
 
     Offset pointFor(int step, double amount) {
       return Offset(
-        size.width * step / _steps,
+        size.width * step / steps,
         size.height * (1 - amount / maxValue),
       );
     }
 
-    // Lignes de repère horizontales.
-    final gridPaint = Paint()
-      ..color = AppColors.line
-      ..strokeWidth = 1;
-    for (var i = 0; i <= 3; i++) {
-      final y = size.height * i / 3;
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-    }
+    // Montant versé : il augmente régulièrement, c'est une droite.
+    final investedStart = pointFor(0, _deposit);
+    final investedEnd = pointFor(steps, _deposit + _monthlyDeposit * steps);
 
     // Courbe de la valeur du placement.
-    final start = pointFor(0, _value(0));
-    final valuePath = Path()..moveTo(start.dx, start.dy);
-    for (var step = 1; step <= _steps; step++) {
-      final point = pointFor(step, _value(step));
-      valuePath.lineTo(point.dx, point.dy);
+    final valueLine = Path()..moveTo(investedStart.dx, investedStart.dy);
+    for (var step = 1; step <= steps; step++) {
+      final point = pointFor(step, _values[step]);
+      valueLine.lineTo(point.dx, point.dy);
     }
 
-    // Le montant versé augmente régulièrement : c'est une droite.
-    final investedStart = pointFor(0, _invested(0));
-    final investedEnd = pointFor(_steps, _invested(_steps));
-
-    // Surface comprise entre la courbe et la droite : les gains.
-    final gainsPath = Path.from(valuePath)
-      ..lineTo(investedEnd.dx, investedEnd.dy)
+    // Surface du montant versé : entre l'axe du bas et la droite.
+    final investedArea = Path()
+      ..moveTo(0, size.height)
       ..lineTo(investedStart.dx, investedStart.dy)
+      ..lineTo(investedEnd.dx, investedEnd.dy)
+      ..lineTo(size.width, size.height)
+      ..close();
+
+    // Surface des gains : entre la droite du montant versé et la courbe.
+    final gainsArea = Path.from(valueLine)
+      ..lineTo(investedEnd.dx, investedEnd.dy)
       ..close();
 
     // On ne laisse apparaître que la partie gauche du dessin, sur une largeur
@@ -127,58 +170,21 @@ class GrowthChartPainter extends CustomPainter {
     canvas.save();
     canvas.clipRect(Rect.fromLTWH(0, 0, size.width * progress, size.height));
 
-    canvas.drawPath(gainsPath, Paint()..color = AppColors.chartFill);
-
-    _drawDashedLine(
-      canvas,
-      investedStart,
-      investedEnd,
-      Paint()
-        ..color = AppColors.chartNeutral
-        ..strokeWidth = 2
-        ..strokeCap = StrokeCap.round,
-    );
-
+    canvas.drawPath(investedArea, Paint()..color = AppColors.chartNeutral);
     canvas.drawPath(
-      valuePath,
+      gainsArea,
+      Paint()..color = AppColors.primary.withValues(alpha: 0.5),
+    );
+    canvas.drawPath(
+      valueLine,
       Paint()
         ..color = AppColors.primary
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.6
-        ..strokeCap = StrokeCap.round
+        ..strokeWidth = 2.4
         ..strokeJoin = StrokeJoin.round,
     );
 
     canvas.restore();
-
-    // Point final, affiché quand la courbe est entièrement tracée.
-    if (progress > 0.97) {
-      final end = pointFor(_steps, _value(_steps)).translate(-4, 0);
-      canvas.drawCircle(end, 6, Paint()..color = Colors.white);
-      canvas.drawCircle(end, 4.2, Paint()..color = AppColors.primary);
-    }
-  }
-
-  void _drawDashedLine(Canvas canvas, Offset from, Offset to, Paint paint) {
-    const dash = 5.0;
-    const gap = 5.0;
-
-    final length = (to - from).distance;
-    if (length == 0) {
-      return;
-    }
-    final direction = (to - from) / length;
-
-    var travelled = 0.0;
-    while (travelled < length) {
-      final segmentEnd = math.min(travelled + dash, length);
-      canvas.drawLine(
-        from + direction * travelled,
-        from + direction * segmentEnd,
-        paint,
-      );
-      travelled += dash + gap;
-    }
   }
 
   @override
